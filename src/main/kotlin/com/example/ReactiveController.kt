@@ -17,15 +17,17 @@ class ReactiveController(
     @GetMapping("/reactive/{personId}")
     fun getMessagesFor(@PathVariable personId: String): Mono<String> {
         return peopleRepository.findById(personId)
-            .switchIfEmpty(Mono.error(NoSuchElementException()))
-            .flatMap { person ->
-                auditRepository.findByEmail(person.email)
-                    .flatMap { lastLogin ->
-                        messageRepository.countByMessageDateGreaterThanAndEmail(lastLogin.eventDate, person.email)
-                            .map { numberOfMessages ->
-                                "Hello ${person.name}, you have $numberOfMessages messages since ${lastLogin.eventDate}"
+                .switchIfEmpty(Mono.error(NoSuchElementException()))
+                .flatMap { person ->
+                    auditRepository.findByEmail(person.email)
+                            .flatMap { lastLogin ->
+                                messageRepository
+                                        .countByMessageDateGreaterThanAndEmail(lastLogin.eventDate, person.email)
+                                        .map { numberOfMessages ->
+                                            "Hello ${person.name}, you have $numberOfMessages messages " +
+                                                    "since ${lastLogin.eventDate}"
+                                        }
                             }
-                    }
-            }
+                }
     }
 }

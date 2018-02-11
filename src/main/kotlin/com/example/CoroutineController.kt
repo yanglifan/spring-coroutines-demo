@@ -9,6 +9,8 @@ import kotlinx.coroutines.experimental.reactor.mono
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
+import java.util.concurrent.Future
+import java.util.concurrent.FutureTask
 
 @RestController
 class CoroutineController(
@@ -20,10 +22,12 @@ class CoroutineController(
     fun getMessages(@PathVariable personId: String) = mono(Unconfined) {
         val person = peopleRepository.findById(personId).awaitSingle()
         val lastLogin = auditRepository.findByEmail(person.email).awaitSingle().eventDate
-        val numberOfMessages = messageRepository.countByMessageDateGreaterThanAndEmail(lastLogin, person.email).awaitSingle()
+        val numberOfMessages = messageRepository
+                .countByMessageDateGreaterThanAndEmail(lastLogin, person.email).awaitSingle()
+        val future: Future<String> = FutureTask({
+            "haha"
+        });
 
-        val message = "Hello ${person.name}, you have $numberOfMessages messages since $lastLogin"
-
-        message
+        "Hello ${person.name}, you have $numberOfMessages messages since $lastLogin"
     }
 }
